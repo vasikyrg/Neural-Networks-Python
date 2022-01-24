@@ -14,7 +14,7 @@ from sklearn.model_selection import KFold
 from tensorflow.keras.regularizers import l2
 from keras import backend as K
 
-# Σταθερές τιμές
+
 epochs = 100
 batch_size = 256
 size_of_hidden_up = [512, 256]
@@ -56,8 +56,6 @@ def model_cifar(first_layer_nodes, last_layer_nodes):
 def grayscale(Trnx, Tstx):
     output_list_trnx = []
     output_list_tstx = []
-    # --> Μετατροπές. Αυτές γίνονται με προσοχή καθώς από RGB σε Grayscale χαμηλώνει το μέγεθος των πινάκων (3->1)
-    # Μετατροπή του Trainx
     for i in range(Trnx.shape[0]):
         output_list_trnx.append(tf.image.rgb_to_grayscale(Trnx[i]))
     Trnx_Gray = tf.stack(output_list_trnx)
@@ -183,13 +181,12 @@ def grid_search_manual_with_cv(size_of_hidden_up, size_of_hidden_down, a_val, lr
                         print(
                             f'Our fold is: ' + str(fold) + '/5 for n_h1=' + str(size_of_hidden_up[nh1]) +
                             ' n_h2='+str(size_of_hidden_down[nh2])+' a=' + str(a_val[a]) + ' and lr=' + str(lr_val[lr]))
-                        # Τυχαία τοποθέτηση αριθμών για την εξαγωγή των train και validation x και y
                         x_train = x[train]
                         y_train = y[train]
                         x_val = x[test]
                         y_val = y[test]
 
-                        # Δημιουργία του μοντέλου με βάση τις προδιαγραφές της εκφώνησης
+                        
                         model = Sequential()
                         model.add(Flatten(input_shape=Trnx.shape[1:]))
                         model.add(BatchNormalization())
@@ -225,35 +222,30 @@ def grid_search_manual_with_cv(size_of_hidden_up, size_of_hidden_down, a_val, lr
         index += 1
 
 
-# --> Διαχείρηση Δεδομένων
-# Κατεβαίνει το dataset της εκφώνησης, εξασφαλίζεται η τυχαιότητα
+
 (Trnx, Trny), (Tstx, Tsty) = cifar10.load_data()
 
-# Μετατροπή συστοιχιών κλάσης 1 διαστάσεων σε πίνακες κλάσης 10 διαστάσεων για την είσοδο
+
 Trny = np_utils.to_categorical(Trny, 10)
 Tsty = np_utils.to_categorical(Tsty, 10)
 
-# Κατεβάζουμε σε float32 από float64 για λιγότερη πολυπλοκότητα
+
 Trnx = Trnx.astype('float32')
 Tstx = Tstx.astype('float32')
 
-# Επιλέγουμε άμα θέλουμε Grayscale ή όχι
+
 if grayscale_boolean:
    Trnx, Tstx = grayscale(Trnx, Tstx)
 
-# Κανονικοποίηση των τιμών στην περιοχή [0,1]
-Trnx = Trnx / 255.0  # Γενικά παίρνει τιμές από 1 έως 255 όμως εμείς θέλουμε από [0,1]
-Tstx = Tstx / 255.0  # Γενικά παίρνει τιμές από 1 έως 255 όμως εμείς θέλουμε
 
-# Ένωση των x και y για να χρησιμοποιηθούν σε μορφή numpy()
+Trnx = Trnx / 255.0  
+Tstx = Tstx / 255.0  
+
+
 x = tf.concat([Trnx, Tstx], 0).numpy()
 y = tf.concat([Trny, Tsty], 0).numpy()
 # print('New Train: X=%s, y=%s' % (Trnx.shape, Trny.shape))
 # print('New Test: X=%s, y=%s' % (Tstx.shape, Tsty.shape))
-# Άμα θέλετε να βρεθούν οι υπερπαράμετροι με αυτόματη grid_search
 # grid_seach_auto()
-# Άμα θέλετε να βρεθούν οι υπερπαράμετροι με δικιά μου υλοποίηση της grid_search
 # grid_search_manual(size_of_hidden_up, size_of_hidden_down)
-# Άμα θέλετε απλά να εμφανίσετε τα διαγράματα για κάποιο μοντέλο
-# print_graphs(512, 256)
 # grid_search_manual_with_cv(size_of_hidden_up, size_of_hidden_down, a_val, lr_val)
