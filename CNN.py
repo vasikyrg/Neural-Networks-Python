@@ -25,8 +25,6 @@ grayscale_boolean = False
 def grayscale(Trnx, Tstx):
     output_list_trnx = []
     output_list_tstx = []
-    # --> Μετατροπές. Αυτές γίνονται με προσοχή καθώς από RGB σε Grayscale χαμηλώνει το μέγεθος των πινάκων (3->1)
-    # Μετατροπή του Trainx
     for i in range(Trnx.shape[0]):
         output_list_trnx.append(tf.image.rgb_to_grayscale(Trnx[i]))
     Trnx_Gray = tf.stack(output_list_trnx)
@@ -141,13 +139,12 @@ def grid_search_manual_with_cv(a_val, lr_val):
                 fold += 1
                 print(
                     f'Our fold is: '+str(fold)+'/'+str(k)+' for a=' + str(a_val[a]) + ' and lr=' + str(lr_val[lr]))
-                # Τυχαία τοποθέτηση αριθμών για την εξαγωγή των train και validation x και y
+                
                 x_train = x[train]
                 y_train = y[train]
                 x_val = x[test]
                 y_val = y[test]
-
-                # Δημιουργία του μοντέλου με βάση τις προδιαγραφές της εκφώνησης
+                
                 model = Sequential()
                 model.add(Conv2D(32, (3, 3), padding='same', activation='relu',
                                  kernel_initializer=tf.keras.initializers.HeNormal(),
@@ -186,27 +183,26 @@ def grid_search_manual_with_cv(a_val, lr_val):
         index += 1
 
 
-# --> Διαχείρηση Δεδομένων
-# Κατεβαίνει το dataset της εκφώνησης, εξασφαλίζεται η τυχαιότητα
+
 (Trnx, Trny), (Tstx, Tsty) = cifar10.load_data()
 
-# Μετατροπή συστοιχιών κλάσης 1 διαστάσεων σε πίνακες κλάσης 10 διαστάσεων για την είσοδο
+
 Trny = np_utils.to_categorical(Trny, 10)
 Tsty = np_utils.to_categorical(Tsty, 10)
 
-# Κατεβάζουμε σε float32 από float64 για λιγότερη πολυπλοκότητα
+
 Trnx = Trnx.astype('float32')
 Tstx = Tstx.astype('float32')
 
-# Επιλέγουμε άμα θέλουμε Grayscale ή όχι
+
 if grayscale_boolean:
    Trnx, Tstx = grayscale(Trnx, Tstx)
 
-# Κανονικοποίηση των τιμών στην περιοχή [0,1]
-Trnx = Trnx / 255.0  # Γενικά παίρνει τιμές από 1 έως 255 όμως εμείς θέλουμε από [0,1]
-Tstx = Tstx / 255.0  # Γενικά παίρνει τιμές από 1 έως 255 όμως εμείς θέλουμε
 
-# Ένωση των x και y για να χρησιμοποιηθούν σε μορφή numpy()
+Trnx = Trnx / 255.0  
+Tstx = Tstx / 255.0  
+
+
 x = tf.concat([Trnx, Tstx], 0).numpy()
 y = tf.concat([Trny, Tsty], 0).numpy()
 
