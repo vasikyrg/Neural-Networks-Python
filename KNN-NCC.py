@@ -27,8 +27,7 @@ def knn(Trnx, Trny, Testx, n_neighbors):
 def grayscale(Trnx, Tstx):
     output_list_trnx = []
     output_list_tstx = []
-    # --> Μετατροπές. Αυτές γίνονται με προσοχή καθώς από RGB σε Grayscale χαμηλώνει το μέγεθος των πινάκων (3->1)
-    # Μετατροπή του Trainx
+    
     for i in range(Trnx.shape[0]):
         output_list_trnx.append(tf.image.rgb_to_grayscale(Trnx[i]))
     Trnx_Gray = tf.stack(output_list_trnx)
@@ -41,34 +40,30 @@ def grayscale(Trnx, Tstx):
     return Trnx_Gray, Tstx_Gray
 
 
-# Επιλέγουμε άμα θέλουμε grayscale ή pca ή κάποιον συνδιασμό αυτών
+
 grayscale_boolean = True
-# --> Διαχείρηση Δεδομένων
-# Κατεβαίνει το dataset της εκφώνησης, εξασφαλίζεται η τυχαιότητα
 (Trnx, Trny), (Tstx, Tsty) = cifar10.load_data()
 print('Train: X=%s, y=%s' % (Trnx.shape, Trny.shape))
 print('Test: X=%s, y=%s' % (Tstx.shape, Tsty.shape))
-# Κατεβάζουμε σε float32 από float64 για λιγότερη πολυπλοκότητα
 Trnx = Trnx.astype('float32')
 Tstx = Tstx.astype('float32')
-# Επιλέγουμε άμα θέλουμε Grayscale ή όχι
 if grayscale_boolean:
    Trnx, Tstx = grayscale(Trnx, Tstx)
 
-# Κανονικοποίηση των τιμών στην περιοχή [0,1]
-Trnx = Trnx / 255.0  # Γενικά παίρνει τιμές από 1 έως 255 όμως εμείς θέλουμε από [0,1]
-Tstx = Tstx / 255.0  # Γενικά παίρνει τιμές από 1 έως 255 όμως εμείς θέλουμε από [0,1]
 
-# Κάνουμε reshape με σκοπό να μπορούμε να συμβαδίσουμε με τα δεδομένα του ΚΝΝ
-Trnx = np.reshape(Trnx, (Trnx.shape[0], -1))  # (50000, 3072) 32 * 32 * 3 = 3072 H KNN δέχεται δισδιάστατους πίνακες
+Trnx = Trnx / 255.0  
+Tstx = Tstx / 255.0  
+
+
+Trnx = np.reshape(Trnx, (Trnx.shape[0], -1))  # (50000, 3072) 32 * 32 * 3 = 3072 
 Trny = Trny.reshape(-1,)
-Tstx = np.reshape(Tstx, (Tstx.shape[0], -1))  # (10000, 3072) 32 * 32 * 3 = 3072 H KNN δέχεται δισδιάστατους πίνακες
+Tstx = np.reshape(Tstx, (Tstx.shape[0], -1))  # (10000, 3072) 32 * 32 * 3 = 3072 
 Tsty = Tsty.reshape(-1,)
 print('New Train: X=%s, y=%s' % (Trnx.shape, Trny.shape))
 print('New Test: X=%s, y=%s' % (Tstx.shape, Tsty.shape))
 
 # --> Nearest Neighbor Classifier
-# Grid Search για την εύρεση του καλύτερου μοντέλου
+
 grid = []
 acc_array = []
 index = 0
@@ -78,7 +73,7 @@ cifar10_names = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog',
 for n_neighbors in range(1, 25):
     print("Number of neighbors is = "+str(n_neighbors)+".")
     y_pred = knn(Trnx, Trny, Tstx, n_neighbors)
-    accuracy = accuracy_score(Tsty, y_pred)  # Είναι προσεγγιστική η τιμή, η κανονική βγαίνει στο clas. report
+    accuracy = accuracy_score(Tsty, y_pred)  
     print("Accuracy: " + str(accuracy * 100) + "%")
     acc_array.append(accuracy)
     grid.append(n_neighbors)
